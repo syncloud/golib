@@ -3,11 +3,11 @@ package platform
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/syncloud/golib/log"
 	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"net/url"
-	"syncloud/log"
 )
 
 type HttpClient interface {

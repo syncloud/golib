@@ -3,10 +3,10 @@ package platform
 import (
 	"bytes"
 	"github.com/stretchr/testify/assert"
+	"github.com/syncloud/golib/log"
 	"io"
 	"net/http"
 	"net/url"
-	"syncloud/log"
 	"testing"
 )
 
