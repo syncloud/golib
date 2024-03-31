@@ -69,3 +69,24 @@ func (c *Client) GetAppDomainName(app string) (string, error) {
 	}
 	return responseJson.Data, nil
 }
+
+func (c *Client) GetAppUrl(app string) (string, error) {
+	c.logger.Info("get app url", zap.String("app", app))
+	resp, err := c.client.Get(fmt.Sprintf("http://unix/app/url?name=%s", app))
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("get app url, %s", resp.Status)
+	}
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	var responseJson Response
+	err = json.Unmarshal(bodyBytes, &responseJson)
+	if err != nil {
+		return "", err
+	}
+	return responseJson.Data, nil
+}
