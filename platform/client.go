@@ -90,3 +90,34 @@ func (c *Client) GetAppUrl(app string) (string, error) {
 	}
 	return responseJson.Data, nil
 }
+
+func (c *Client) RegisterOIDCClient(id, redirectUrl string, requirePkce bool, tokenEndpointAuthMethod string) (string, error) {
+	requirePkceString := "false"
+	if requirePkce {
+		requirePkceString = "true"
+	}
+	values := url.Values{
+		"id":                         {id},
+		"redirect_url":               {redirectUrl},
+		"require_pkce":               {requirePkceString},
+		"token_endpoint_auth_method": {tokenEndpointAuthMethod},
+	}
+	c.logger.Info("init storage", zap.String("request", values.Encode()))
+	resp, err := c.client.Post("http://unix/oidc/register", values)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("register oidc client, %s", resp.Status)
+	}
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	var responseJson Response
+	err = json.Unmarshal(bodyBytes, &responseJson)
+	if err != nil {
+		return "", err
+	}
+	return responseJson.Data, nil
+}
