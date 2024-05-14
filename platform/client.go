@@ -102,7 +102,7 @@ func (c *Client) RegisterOIDCClient(id, redirectUrl string, requirePkce bool, to
 		"require_pkce":               {requirePkceString},
 		"token_endpoint_auth_method": {tokenEndpointAuthMethod},
 	}
-	c.logger.Info("init storage", zap.String("request", values.Encode()))
+	c.logger.Info("register oidc client", zap.String("request", values.Encode()))
 	resp, err := c.client.Post("http://unix/oidc/register", values)
 	if err != nil {
 		return "", err
