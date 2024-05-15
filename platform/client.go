@@ -121,3 +121,16 @@ func (c *Client) RegisterOIDCClient(id, redirectUrl string, requirePkce bool, to
 	}
 	return responseJson.Data, nil
 }
+
+func (c *Client) RestartService(name string) error {
+	values := url.Values{"name": {name}}
+	c.logger.Info("service restart", zap.String("request", values.Encode()))
+	resp, err := c.client.Post("http://unix/service/restart", values)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("unable to restart service, %s", resp.Status)
+	}
+	return nil
+}
