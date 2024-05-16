@@ -91,14 +91,14 @@ func (c *Client) GetAppUrl(app string) (string, error) {
 	return responseJson.Data, nil
 }
 
-func (c *Client) RegisterOIDCClient(id, redirectUrl string, requirePkce bool, tokenEndpointAuthMethod string) (string, error) {
+func (c *Client) RegisterOIDCClient(id, redirectUri string, requirePkce bool, tokenEndpointAuthMethod string) (string, error) {
 	requirePkceString := "false"
 	if requirePkce {
 		requirePkceString = "true"
 	}
 	values := url.Values{
 		"id":                         {id},
-		"redirect_url":               {redirectUrl},
+		"redirect_uri":               {redirectUri},
 		"require_pkce":               {requirePkceString},
 		"token_endpoint_auth_method": {tokenEndpointAuthMethod},
 	}
