@@ -3,11 +3,10 @@ package linux
 import (
 	"fmt"
 	"os/exec"
-	"os/user"
 )
 
 func UserExists(username string) bool {
-	_, err := user.Lookup(username)
+	_, err := exec.Command("id", username).CombinedOutput()
 	return err == nil
 }
 
