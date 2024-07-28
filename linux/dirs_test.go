@@ -7,20 +7,6 @@ import (
 	"testing"
 )
 
-func TestCreateMissingDir(t *testing.T) {
-	tempDir := t.TempDir()
-
-	testDir := path.Join(tempDir, "test1")
-
-	err := CreateMissingDir(testDir)
-	assert.NoError(t, err)
-
-	fileInfo, err := os.Stat(testDir)
-	assert.NoError(t, err)
-	assert.True(t, fileInfo.IsDir())
-
-}
-
 func TestCreateMissingDirs(t *testing.T) {
 	tempDir := t.TempDir()
 
