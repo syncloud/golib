@@ -1,41 +1,35 @@
 package config
 
 import (
-	"errors"
-	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
+	"strings"
 	"text/template"
 )
 
 func Generate(input, output string, data interface{}) error {
-	_, err := os.Stat(output)
-	if errors.Is(err, os.ErrNotExist) {
-		err := os.MkdirAll(output, 0755)
+	return filepath.Walk(input, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	var templates = template.Must(template.ParseGlob(fmt.Sprintf("%s/*", input)))
-	for _, t := range templates.Templates() {
-		err := write(output, t, data)
+		target := strings.Replace(path, input, output, 1)
+		if info.IsDir() {
+			return os.MkdirAll(target, 0755)
+		}
+		t, err := template.ParseFiles(path)
 		if err != nil {
 			return err
 		}
-	}
-	return nil
+		return write(target, t, data)
+	})
 }
 
 func write(output string, t *template.Template, data interface{}) error {
-	f, err := os.Create(fmt.Sprintf("%s/%s", output, t.Name()))
+	f, err := os.Create(output)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-
-	err = t.Execute(f, data)
-	if err != nil {
-		return err
-	}
-	return nil
+	return t.Execute(f, data)
 }
