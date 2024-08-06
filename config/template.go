@@ -2,9 +2,11 @@ package config
 
 import (
 	"errors"
+	"path/filepath"
 	"fmt"
 	"os"
 	"text/template"
+"io/fs"
 )
 
 func Generate(input, output string, data interface{}) error {
@@ -15,15 +17,23 @@ func Generate(input, output string, data interface{}) error {
 			return err
 		}
 	}
-
-	var templates = template.Must(template.ParseGlob(fmt.Sprintf("%s/*", input)))
-	for _, t := range templates.Templates() {
-		err := write(output, t, data)
+	err = filepath.Walk(input, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-	}
-	return nil
+
+		if info.IsDir() {
+			return os.MkdirAll(path, 0755)
+		}
+ t, err := template.ParseFiles(path)
+if err != nil {
+			return err
+		}
+		return write(path, t, data)
+
+	})
+	
+	return err
 }
 
 func write(output string, t *template.Template, data interface{}) error {
@@ -33,9 +43,6 @@ func write(output string, t *template.Template, data interface{}) error {
 	}
 	defer f.Close()
 
-	err = t.Execute(f, data)
-	if err != nil {
-		return err
-	}
-	return nil
+	return t.Execute(f, data)
+
 }
