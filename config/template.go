@@ -9,6 +9,10 @@ import (
 )
 
 func Generate(input, output string, data interface{}) error {
+	return GenerateWithDelims(input, output, data, "", "")
+}
+
+func GenerateWithDelims(input, output string, data interface{}, leftDelim, rightDelim string) error {
 	return filepath.Walk(input, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -17,7 +21,7 @@ func Generate(input, output string, data interface{}) error {
 		if info.IsDir() {
 			return os.MkdirAll(target, 0755)
 		}
-		t, err := template.ParseFiles(path)
+		t, err := template.New(filepath.Base(path)).Delims(leftDelim, rightDelim).ParseFiles(path)
 		if err != nil {
 			return err
 		}
