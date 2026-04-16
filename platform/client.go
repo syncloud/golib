@@ -91,6 +91,10 @@ func (c *Client) GetAppUrl(app string) (string, error) {
 	return responseJson.Data, nil
 }
 
+func (c *Client) GetAuthLocalSocket() string {
+	return "http://unix:/var/snap/platform/current/authelia.socket:"
+}
+
 func (c *Client) RegisterOIDCClient(id, redirectUri string, requirePkce bool, tokenEndpointAuthMethod string) (string, error) {
 	requirePkceString := "false"
 	if requirePkce {
