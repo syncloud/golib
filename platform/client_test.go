@@ -12,11 +12,20 @@ import (
 
 type HttpClientStub struct {
 	values url.Values
+	url    string
 }
 
 func (h *HttpClientStub) Get(url string) (resp *http.Response, err error) {
-	//TODO implement me
-	panic("implement me")
+	h.url = url
+	return &http.Response{
+		StatusCode: 200,
+		Body: io.NopCloser(bytes.NewReader([]byte(`
+{
+	"success": true,
+	"data": "/data/app"
+}
+`))),
+	}, nil
 }
 
 func (h *HttpClientStub) Post(url string, values url.Values) (resp *http.Response, err error) {
@@ -44,4 +53,16 @@ func TestRealHttpClient_Post(t *testing.T) {
 	assert.Contains(t, httpClient.values.Encode(), "user")
 	assert.Equal(t, "/data/app", storage)
 
+}
+
+func TestClient_GetAppStorageDir(t *testing.T) {
+	httpClient := &HttpClientStub{}
+	client := &Client{
+		client: httpClient,
+		logger: log.Logger(),
+	}
+	storage, err := client.GetAppStorageDir("app")
+	assert.NoError(t, err)
+	assert.Contains(t, httpClient.url, "/app/storage_dir?name=app")
+	assert.Equal(t, "/data/app", storage)
 }
