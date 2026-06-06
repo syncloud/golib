@@ -55,6 +55,20 @@ func TestRealHttpClient_Post(t *testing.T) {
 
 }
 
+func TestClient_RegisterOIDCClient_SendsMultipleRedirectUris(t *testing.T) {
+	httpClient := &HttpClientStub{}
+	client := &Client{
+		client: httpClient,
+		logger: log.Logger(),
+	}
+	_, err := client.RegisterOIDCClient("app", []string{"/cb", "/mobile"}, true, "client_secret_basic")
+	assert.NoError(t, err)
+	assert.Equal(t, "app", httpClient.values.Get("id"))
+	assert.Equal(t, []string{"/cb", "/mobile"}, httpClient.values["redirect_uri"])
+	assert.Equal(t, "true", httpClient.values.Get("require_pkce"))
+	assert.Equal(t, "client_secret_basic", httpClient.values.Get("token_endpoint_auth_method"))
+}
+
 func TestClient_GetAppStorageDir(t *testing.T) {
 	httpClient := &HttpClientStub{}
 	client := &Client{

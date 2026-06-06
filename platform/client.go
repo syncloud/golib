@@ -116,14 +116,14 @@ func (c *Client) GetAuthLocalSocket() string {
 	return "http://unix:/var/snap/platform/current/authelia.socket:"
 }
 
-func (c *Client) RegisterOIDCClient(id, redirectUri string, requirePkce bool, tokenEndpointAuthMethod string) (string, error) {
+func (c *Client) RegisterOIDCClient(id string, redirectUris []string, requirePkce bool, tokenEndpointAuthMethod string) (string, error) {
 	requirePkceString := "false"
 	if requirePkce {
 		requirePkceString = "true"
 	}
 	values := url.Values{
 		"id":                         {id},
-		"redirect_uri":               {redirectUri},
+		"redirect_uri":               redirectUris,
 		"require_pkce":               {requirePkceString},
 		"token_endpoint_auth_method": {tokenEndpointAuthMethod},
 	}
