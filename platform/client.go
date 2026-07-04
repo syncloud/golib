@@ -159,3 +159,35 @@ func (c *Client) RestartService(name string) error {
 	}
 	return nil
 }
+
+func (c *Client) GetDeviceDomainName() (string, error) {
+	c.logger.Info("get device domain name")
+	resp, err := c.client.Get("http://unix/app/device_domain_name")
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("get device domain name, %s", resp.Status)
+	}
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	var responseJson Response
+	if err := json.Unmarshal(bodyBytes, &responseJson); err != nil {
+		return "", err
+	}
+	return responseJson.Data, nil
+}
+
+func (c *Client) SetDkimKey(key string) error {
+	c.logger.Info("set dkim key")
+	resp, err := c.client.Post("http://unix/config/set_dkim_key", url.Values{"dkim_key": {key}})
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("set dkim key, %s", resp.Status)
+	}
+	return nil
+}
