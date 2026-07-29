@@ -25,6 +25,11 @@ func (c *Client) GetMailRelay() (*MailRelay, error) {
 	if err != nil {
 		return nil, err
 	}
+	// a platform that predates the mail relay has no such endpoint, which means
+	// the feature is simply unavailable rather than broken
+	if resp.StatusCode == 404 {
+		return &MailRelay{Enabled: false}, nil
+	}
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("get mail relay, %s", resp.Status)
 	}

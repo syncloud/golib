@@ -62,3 +62,24 @@ func TestClient_GetMailRelay_Disabled(t *testing.T) {
 	assert.False(t, relay.Enabled)
 	assert.Empty(t, relay.Host)
 }
+
+type MailRelayNotFoundStub struct{}
+
+func (h *MailRelayNotFoundStub) Get(_ string) (resp *http.Response, err error) {
+	return &http.Response{
+		StatusCode: 404,
+		Body:       io.NopCloser(bytes.NewReader([]byte("not found"))),
+	}, nil
+}
+
+func (h *MailRelayNotFoundStub) Post(_ string, _ url.Values) (resp *http.Response, err error) {
+	return nil, nil
+}
+
+func TestClient_GetMailRelay_OldPlatformIsDisabled(t *testing.T) {
+	client := &Client{client: &MailRelayNotFoundStub{}, logger: log.Logger()}
+
+	relay, err := client.GetMailRelay()
+	assert.NoError(t, err)
+	assert.False(t, relay.Enabled)
+}
