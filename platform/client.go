@@ -191,3 +191,26 @@ func (c *Client) SetDkimKey(key string) error {
 	}
 	return nil
 }
+
+func (c *Client) GetMailRelay() (*MailRelay, error) {
+	c.logger.Info("get mail relay")
+	resp, err := c.client.Get("http://unix/mail/relay")
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode == 404 {
+		return &MailRelay{Enabled: false}, nil
+	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("get mail relay, %s", resp.Status)
+	}
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var responseJson MailRelayResponse
+	if err := json.Unmarshal(bodyBytes, &responseJson); err != nil {
+		return nil, err
+	}
+	return &responseJson.Data, nil
+}
