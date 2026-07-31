@@ -1,6 +1,9 @@
 [{
     kind: "pipeline",
     type: "docker",
+    trigger: {
+        event: [ "push" ]
+    },
     steps: [
         {
             name: "test",
