@@ -80,3 +80,48 @@ func TestClient_GetAppStorageDir(t *testing.T) {
 	assert.Contains(t, httpClient.url, "/app/storage_dir?name=app")
 	assert.Equal(t, "/data/app", storage)
 }
+
+type StatusClientStub struct {
+	status int
+	values url.Values
+	url    string
+}
+
+func (h *StatusClientStub) Get(url string) (*http.Response, error) {
+	h.url = url
+	return &http.Response{StatusCode: h.status, Body: io.NopCloser(bytes.NewReader(nil))}, nil
+}
+
+func (h *StatusClientStub) Post(url string, values url.Values) (*http.Response, error) {
+	h.url = url
+	h.values = values
+	return &http.Response{StatusCode: h.status, Body: io.NopCloser(bytes.NewReader(nil))}, nil
+}
+
+func TestClient_RegisterMailInbound(t *testing.T) {
+	httpClient := &StatusClientStub{status: 200}
+	client := &Client{client: httpClient, logger: log.Logger()}
+
+	err := client.RegisterMailInbound("/var/snap/mail/current/spool/public/tunnel")
+
+	assert.NoError(t, err)
+	assert.Equal(t, "http://unix/mail/inbound/register", httpClient.url)
+	assert.Equal(t, "/var/snap/mail/current/spool/public/tunnel", httpClient.values.Get("socket"))
+}
+
+func TestClient_RegisterMailInboundNotSupported(t *testing.T) {
+	client := &Client{client: &StatusClientStub{status: 404}, logger: log.Logger()}
+
+	err := client.RegisterMailInbound("/socket")
+
+	assert.ErrorIs(t, err, ErrNotSupported)
+}
+
+func TestClient_RegisterMailInboundFails(t *testing.T) {
+	client := &Client{client: &StatusClientStub{status: 500}, logger: log.Logger()}
+
+	err := client.RegisterMailInbound("/socket")
+
+	assert.Error(t, err)
+	assert.NotErrorIs(t, err, ErrNotSupported)
+}
