@@ -2,6 +2,7 @@ package platform
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/syncloud/golib/log"
 	"go.uber.org/zap"
@@ -9,6 +10,8 @@ import (
 	"net/http"
 	"net/url"
 )
+
+var ErrNotSupported = errors.New("platform does not support this request")
 
 type HttpClient interface {
 	Post(url string, values url.Values) (resp *http.Response, err error)
@@ -178,6 +181,22 @@ func (c *Client) GetDeviceDomainName() (string, error) {
 		return "", err
 	}
 	return responseJson.Data, nil
+}
+
+func (c *Client) RegisterMailInbound(socket string) error {
+	c.logger.Info("register mail inbound", zap.String("socket", socket))
+	resp, err := c.client.Post("http://unix/mail/inbound/register", url.Values{"socket": {socket}})
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNotFound {
+		return ErrNotSupported
+	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("register mail inbound, %s", resp.Status)
+	}
+	return nil
 }
 
 func (c *Client) SetDkimKey(key string) error {
